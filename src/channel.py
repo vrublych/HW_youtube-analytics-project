@@ -1,6 +1,7 @@
 import os
 import json
 from googleapiclient.discovery import build
+import isodate
 
 class Channel:
     """Класс для ютуб-канала"""
