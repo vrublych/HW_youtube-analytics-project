@@ -1,7 +1,6 @@
 import json
 import os
 from googleapiclient.discovery import build
-from config import YT_CHANNEL_DATA
 
 
 class Channel:
