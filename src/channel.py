@@ -29,6 +29,30 @@ class Channel:
             'view_count': self.view_count,
         }
 
+    def __str__(self):
+        """Возвращает строку с названием и ссылкой на канал."""
+        return f"{self.title} ({self.url})"
+
+    def __add__(self, other):
+        """Сложение каналов по кол-ву подписчиков."""
+        return int(self.subscriber_count) + int(other.subscriber_count)
+
+    def __sub__(self, other):
+        """Вычитание каналов по кол-ву подписчиков."""
+        return int(self.subscriber_count) - int(other.subscriber_count)
+
+    def __gt__(self, other):
+        """Сравнение, является ли кол-во подписчиков текущего канала больше, чем у другого."""
+        return int(self.subscriber_count) > int(other.subscriber_count)
+
+    def __ge__(self, other):
+        """Сравнение, является ли кол-во подписчиков текущего канала больше или равно кол-ву у другого."""
+        return int(self.subscriber_count) >= int(other.subscriber_count)
+
+    def __eq__(self, other):
+        """Сравнение каналов по подписчикам."""
+        return int(self.subscriber_count) == int(other.subscriber_count)
+
     @property
     def channel_id(self):
         return self.__channel_id
