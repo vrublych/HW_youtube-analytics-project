@@ -1,8 +1,10 @@
+import os
 import isodate
 from datetime import timedelta
-from src.channel import Channel
+from googleapiclient.discovery import build
 
-youtube = Channel.get_service()
+api_key: str = os.getenv('YOUTUBE_API_KEY')
+youtube = build('youtube', 'v3', developerKey=api_key)
 
 class PlayList:
     def __init__(self, playlist_id):
@@ -16,11 +18,17 @@ class PlayList:
         """
         Получение информации о видео в плейлисте.
         """
-        playlist_videos = youtube.playlistItems().list(playlistId=self.playlist_id, part='contentDetails', maxResults=50).execute()
-        video_ids = [video['contentDetails']['videoId'] for video in playlist_videos.get('items', [])]
+        playlist_videos = youtube.playlistItems().list(playlistId=self.playlist_id,part='contentDetails',maxResults=50).execute()
+        video_ids = [
+            video['contentDetails']['videoId']
+            for video in playlist_videos.get('items', [])
+        ]
         video_response = []
         if video_ids:
-            video_response = youtube.videos().list(part='contentDetails,statistics', id=','.join(video_ids)).execute().get('items', [])
+            video_response = youtube.videos().list(
+                part='contentDetails,statistics',
+                id=','.join(video_ids)
+            ).execute().get('items', [])
         return video_response
 
     @property
@@ -28,15 +36,23 @@ class PlayList:
         """
         Вычисление общей продолжительности видео в плейлисте.
         """
-        return sum((isodate.parse_duration(video['contentDetails']['duration']) for video in self.video_response),
-                   timedelta())
+        durations = (
+            isodate.parse_duration(video['contentDetails']['duration'])
+            for video in self.video_response
+        )
+        total_duration = sum(durations, timedelta())
+        return total_duration
 
     def show_best_video(self):
         """
-        Определение лучшего видео в плейлисте на основе количества лайков.
+        Возвращает ссылку на видео с наибольшим количеством лайков.
         """
-        videos_with_statistics = [video for video in self.video_response if 'statistics' in video]
-        if not videos_with_statistics:
-            return None
-        best_video = max(videos_with_statistics, key=lambda video: int(video['statistics'].get('likeCount', 0)))
-        return f"https://youtu.be/{best_video['id']}"
+        max_likes = 0
+        best_video = None
+        for video in self.get_video_response():
+            likes = int(video['statistics']['likeCount'])
+            if likes > max_likes:
+                max_likes = likes
+                best_video = video
+        if best_video is not None:
+            return f"https://youtu.be/{best_video['id']}"
