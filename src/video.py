@@ -8,12 +8,18 @@ youtube = build('youtube', 'v3', developerKey=api_key)
 class Video:
     def __init__(self, video_id):
         self.__video_id = video_id
-        self.video_data = youtube.videos().list(part='snippet,statistics,contentDetails,topicDetails',
+        try:
+            self.video_data = youtube.videos().list(part='snippet,statistics,contentDetails,topicDetails',
                                                id=video_id).execute()
-        self.video_title = self.video_data['items'][0]['snippet']['title']
-        self.video_url = f'https://www.youtube.com/watch?v={self.__video_id}'
-        self.views = self.video_data['items'][0]['statistics']['viewCount']
-        self.likes = self.video_data['items'][0]['statistics']['likeCount']
+            self.video_title = self.video_data['items'][0]['snippet']['title']
+            self.video_url = f'https://www.youtube.com/watch?v={self.__video_id}'
+            self.views = self.video_data['items'][0]['statistics']['viewCount']
+            self.likes = self.video_data['items'][0]['statistics']['likeCount']
+        except IndexError:
+            self.video_title = None
+            self.video_url = None
+            self.views = None
+            self.likes = None
 
     @property
     def video_id(self):
